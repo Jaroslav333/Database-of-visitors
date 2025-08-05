@@ -18,7 +18,10 @@ input_frame = Frame(root)
 input_frame.pack()
 
 heading_operations_frame = Frame(root)
-heading_operations_frame.pack() 
+heading_operations_frame.pack()
+
+id_frame = Frame(root)
+id_frame.pack()
 
 button_frame = Frame(root)
 button_frame.pack()
@@ -47,7 +50,7 @@ create()
 
 # fuction to insert data into database
 def insert_data(first_name, second_name, age):
-    
+
     try:
         first_name = first_name_entry.get()
         second_name = second_name_entry.get()
@@ -78,8 +81,32 @@ def insert_data(first_name, second_name, age):
     except psycopg.DatabaseError as e:
         print(f'Error databse: {e}')
     except Exception as e:
-        print(f'Error: {e}') 
-     
+        print(f'Error: {e}')
+
+# function to find selected visitor from database by ID
+def search(id):
+    try:
+        id = id_entry.get()
+        id = int(id)
+
+        query = '''SELECT * FROM visitors WHERE id = %s'''
+        with psycopg.connect(dbname='visitorsdb', user='myuser', password='admin', host='localhost', port='5432') as connection:
+            with connection.cursor() as cur:
+                cur.execute(query, (id,))
+                selected_visitor = cur.fetchone()
+                search_listbox = Listbox(content_frame, width=20, height=1, justify='center')
+                search_listbox.insert(0, selected_visitor)
+                search_listbox.grid(row=0, column=0)
+                
+    except psycopg.errors.InvalidTextRepresentation:
+        messagebox.showerror('Error', 'Set correct ID value !')
+    except ValueError:
+        messagebox.showerror('Error', 'Set correct ID value !')
+    except psycopg.DatabaseError as e:
+        print(f'Error databse: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+   
 ## Heading
 general_label = Label(general_frame, text='Database of visitors', font=('Times New Roman', 17, 'bold'))
 general_label.pack()
@@ -108,6 +135,20 @@ age_entry.grid(row=2, column=1)
 
 button_register = Button(input_frame, text='Register', command=lambda:insert_data(first_name_entry.get(), second_name_entry.get(), age_entry.get()))
 button_register.grid(row=3, column=1)
+
+## Operations section
+operatins_heading_label = Label(heading_operations_frame, text='Operations', font=('Arial', 12, 'bold'))
+operatins_heading_label.pack()
+
+id_label = Label(id_frame, text="Visitor's ID: ")
+id_label.grid(row=0, column=0)
+
+id_entry = Entry(id_frame)
+id_entry.grid(row=0, column=1)
+
+# Button section
+button_search = Button(button_frame, text='Search', command=lambda:search(id_entry.get() if id_entry.get() else None))
+button_search.grid(row=0, column=0)
 
 
 
