@@ -1,5 +1,6 @@
 from tkinter import *
 import psycopg
+from tkinter import messagebox
 
 root = Tk()
 root.geometry('500x400+200+100')
@@ -44,6 +45,41 @@ def create():
         print(f'Error: {e}')
 create()
 
+# fuction to insert data into database
+def insert_data(first_name, second_name, age):
+    
+    try:
+        first_name = first_name_entry.get()
+        second_name = second_name_entry.get()
+        age = age_entry.get()
+
+        first_name = str(first_name)
+        second_name = str(second_name)
+        age = int(age)
+
+        first_name_entry.delete(0, END)
+        second_name_entry.delete(0, END)
+        age_entry.delete(0, END)
+    
+        if first_name == '' or second_name == '' or age == '':
+            messagebox.showinfo('Status', 'Set all inputs, please.')
+        else:    
+            query = '''INSERT INTO visitors (first_name, second_name, age)
+                    VALUES (%s, %s, %s)'''
+            with psycopg.connect(dbname='visitorsdb', user='myuser', password='admin', host='localhost', port='5432') as connection:
+                with connection.cursor() as cur:
+                    cur.execute(query, (first_name, second_name, age))
+                    messagebox.showinfo('Status', 'New visitor was succesfully added.')
+
+    except psycopg.errors.InvalidTextRepresentation:
+        messagebox.showerror('Error', 'Set correct values !')
+    except ValueError:
+        messagebox.showerror('Error', 'Set correct values !')
+    except psycopg.DatabaseError as e:
+        print(f'Error databse: {e}')
+    except Exception as e:
+        print(f'Error: {e}') 
+     
 ## Heading
 general_label = Label(general_frame, text='Database of visitors', font=('Times New Roman', 17, 'bold'))
 general_label.pack()
@@ -70,7 +106,7 @@ age_label.grid(row=2, column=0)
 age_entry = Entry(input_frame)
 age_entry.grid(row=2, column=1)
 
-button_register = Button(input_frame, text='Register')
+button_register = Button(input_frame, text='Register', command=lambda:insert_data(first_name_entry.get(), second_name_entry.get(), age_entry.get()))
 button_register.grid(row=3, column=1)
 
 
