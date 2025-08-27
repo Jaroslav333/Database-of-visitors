@@ -97,10 +97,13 @@ def search(id):
             with connection.cursor() as cur:
                 cur.execute(query, (id,))
                 selected_visitor = cur.fetchone()
-                search_listbox = Listbox(content_frame, width=20, height=1, justify='center')
-                search_listbox.insert(0, selected_visitor)
-                search_listbox.grid(row=0, column=0)
-
+                if selected_visitor:
+                    search_listbox = Listbox(content_frame, width=20, height=1, justify='center')
+                    search_listbox.insert(0, selected_visitor)
+                    search_listbox.grid(row=0, column=0)
+                else:
+                    messagebox.showerror('Error', 'ID not exists !')
+                
     except psycopg.errors.InvalidTextRepresentation:
         messagebox.showerror('Error', 'Set correct ID value !')
     except ValueError:
@@ -135,6 +138,31 @@ def display_all_visitors():
     except Exception as e:
         print(f'Error: {e}')
 display_all_visitors()
+
+# function to delete selected visitor from database by his ID
+def delete(id):
+    try:
+        id = id_entry.get()
+        id = int(id)
+
+        select_query = '''SELECT id FROM visitors WHERE id = %s'''
+        delete_query = '''DELETE FROM visitors WHERE id = %s'''
+
+        with psycopg.connect(dbname='visitorsdb', user='myuser', password='admin', host='localhost', port='5432') as connection:
+            with connection.cursor() as cur:
+                cur.execute(select_query, (id,))
+                result = cur.fetchone()
+                if not result:
+                    messagebox.showerror('Error', 'ID not exists !')
+                    return
+
+                cur.execute(delete_query, (id,)) 
+                listbox.delete(ANCHOR)
+                messagebox.showinfo('Status', 'Selected visitor was succesfully deleted!')
+                                     
+    except Exception as e:
+        print(f'Error: {e}')
+    
             
 
 
@@ -179,8 +207,11 @@ id_entry = Entry(id_frame)
 id_entry.grid(row=0, column=1)
 
 # Button section
-button_search = Button(button_frame, text='Search', command=lambda:search(id_entry.get() if id_entry.get() else None))
+button_search = Button(button_frame, text='Search', command=lambda:search(id_entry.get() if id_entry.get().strip() else None))
 button_search.grid(row=0, column=0)
+
+button_delete = Button(button_frame, text='Delete', command=lambda:delete(id_entry.get() if id_entry.get().strip() else None))
+button_delete.grid(row=0, column=1)
 
 # Content section
 heading_content_label = Label(heading_content_frame, text='All visitors', font=('Arial', 12, 'bold'))
