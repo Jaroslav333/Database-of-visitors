@@ -26,6 +26,9 @@ id_frame.pack()
 button_frame = Frame(root)
 button_frame.pack()
 
+heading_content_frame = Frame(root)
+heading_content_frame.pack()
+
 content_frame = Frame(root)
 content_frame.pack()
 
@@ -83,7 +86,7 @@ def insert_data(first_name, second_name, age):
     except Exception as e:
         print(f'Error: {e}')
 
-# function to find selected visitor from database by ID
+# function to find selected visitor from database by his ID
 def search(id):
     try:
         id = id_entry.get()
@@ -97,7 +100,7 @@ def search(id):
                 search_listbox = Listbox(content_frame, width=20, height=1, justify='center')
                 search_listbox.insert(0, selected_visitor)
                 search_listbox.grid(row=0, column=0)
-                
+
     except psycopg.errors.InvalidTextRepresentation:
         messagebox.showerror('Error', 'Set correct ID value !')
     except ValueError:
@@ -106,6 +109,29 @@ def search(id):
         print(f'Error databse: {e}')
     except Exception as e:
         print(f'Error: {e}')
+
+# listbox to display all visitors - part of content section 
+listbox = Listbox(content_frame, width=30, height=5)
+listbox.grid(row=1, column=0)
+
+# function to display all visitor in listbox
+def display_all_visitors():
+    try:
+        query = '''SELECT * FROM visitors'''
+        with psycopg.connect(dbname='visitorsdb', user='myuser', password='admin', host='localhost', port='5432') as connection:
+            with connection.cursor() as cur:
+                cur.execute(query)
+                all_visitors = cur.fetchall()
+                for one_visitor in all_visitors:
+                    listbox.insert(0, one_visitor)
+    except psycopg.DatabaseError as e:
+        print(f'Error database: {e}')
+    except Exception as e:
+        print(f'Error: {e}')
+display_all_visitors()
+            
+
+
    
 ## Heading
 general_label = Label(general_frame, text='Database of visitors', font=('Times New Roman', 17, 'bold'))
@@ -149,6 +175,12 @@ id_entry.grid(row=0, column=1)
 # Button section
 button_search = Button(button_frame, text='Search', command=lambda:search(id_entry.get() if id_entry.get() else None))
 button_search.grid(row=0, column=0)
+
+# Content section
+heading_content_label = Label(heading_content_frame, text='All visitors', font=('Arial', 12, 'bold'))
+heading_content_label.pack()
+
+
 
 
 
