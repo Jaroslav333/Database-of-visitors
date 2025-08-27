@@ -114,6 +114,12 @@ def search(id):
 listbox = Listbox(content_frame, width=30, height=5)
 listbox.grid(row=1, column=0)
 
+scrollbar = Scrollbar(content_frame)
+scrollbar.grid(row=1, column=2, sticky='nsw')
+
+listbox.config(yscrollcommand=scrollbar.set)
+scrollbar.config(command=listbox.yview)
+
 # function to display all visitor in listbox
 def display_all_visitors():
     try:
