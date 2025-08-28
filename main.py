@@ -125,6 +125,7 @@ scrollbar.config(command=listbox.yview)
 
 # function to display all visitor in listbox
 def display_all_visitors():
+    listbox.delete(0, END)
     try:
         query = '''SELECT * FROM visitors'''
         with psycopg.connect(dbname='visitorsdb', user='myuser', password='admin', host='localhost', port='5432') as connection:
@@ -137,6 +138,7 @@ def display_all_visitors():
         print(f'Error database: {e}')
     except Exception as e:
         print(f'Error: {e}')
+        
 display_all_visitors()
 
 # function to delete selected visitor from database by his ID
@@ -250,6 +252,9 @@ button_delete.grid(row=0, column=1)
 
 button_update = Button(button_frame, text='Update', command=lambda:update(first_name_entry.get(), second_name_entry.get(), age_entry.get(), id_entry.get()))
 button_update.grid(row=0, column=2)
+
+button_reload = Button(button_frame, text='Show changes', command=lambda:display_all_visitors())
+button_reload.grid(row=0, column=3)
 
 # Content section
 heading_content_label = Label(heading_content_frame, text='All visitors', font=('Arial', 12, 'bold'))
