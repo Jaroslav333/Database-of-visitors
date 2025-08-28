@@ -162,10 +162,45 @@ def delete(id):
                                      
     except Exception as e:
         print(f'Error: {e}')
-    
+
+# function to update values in database
+def update(first_name, second_name, age, id):
+    try:
+        first_name = first_name_entry.get()
+        second_name = second_name_entry.get()
+        age = age_entry.get()
+        id = id_entry.get()
+
+        first_name_entry.delete(0, END)
+        second_name_entry.delete(0, END)
+        age_entry.delete(0, END)
+        id_entry.delete(0, END)
+
+        if first_name == '' or second_name == '' or age == '' or id == '': 
+            messagebox.showwarning('Warning', 'You must fill First name, Second name, Age and ID !')
+        else:
+            query_select = '''SELECT id FROM visitors WHERE id = %s'''
+            query_update = '''UPDATE visitors
+                                SET first_name = %s,
+                                    second_name = %s,
+                                    age = %s
+                                WHERE id = %s'''
             
+            with psycopg.connect(dbname='visitorsdb', user='myuser', password='admin', host='localhost', port='5432') as connection:
+                with connection.cursor() as cur:
+                    cur.execute(query_select, (id,))
+                    result = cur.fetchone()
+                    if not result:
+                        messagebox.showerror('Error', 'ID not exists !')
+                        return
 
-
+                    cur.execute(query_update, (first_name, second_name, age, id))
+                    messagebox.showinfo('Status', 'Selected visitor was succesfully updated !')
+    except psycopg.DatabaseError as e:
+        print(f'Error database: {e}')
+    except Exception as e:
+        print(f'Error: {e}')  
+            
    
 ## Heading
 general_label = Label(general_frame, text='Database of visitors', font=('Times New Roman', 17, 'bold'))
@@ -212,6 +247,9 @@ button_search.grid(row=0, column=0)
 
 button_delete = Button(button_frame, text='Delete', command=lambda:delete(id_entry.get() if id_entry.get().strip() else None))
 button_delete.grid(row=0, column=1)
+
+button_update = Button(button_frame, text='Update', command=lambda:update(first_name_entry.get(), second_name_entry.get(), age_entry.get(), id_entry.get()))
+button_update.grid(row=0, column=2)
 
 # Content section
 heading_content_label = Label(heading_content_frame, text='All visitors', font=('Arial', 12, 'bold'))
